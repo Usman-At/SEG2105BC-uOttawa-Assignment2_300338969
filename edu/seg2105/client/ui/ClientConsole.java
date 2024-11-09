@@ -26,6 +26,8 @@ public class ClientConsole implements ChatIF
    * The default port to connect on.
    */
   final public static int DEFAULT_PORT = 5555;
+
+private static String loginID;
   
   //Instance variables **********************************************
   
@@ -50,18 +52,17 @@ public class ClientConsole implements ChatIF
    * @param host The host to connect to.
    * @param port The port to connect on.
    */
-  public ClientConsole(String host, int port) 
+  public ClientConsole(String loginID, String host, int port) 
   {
     try 
     {
-      client= new ChatClient(host, port, this);
+      client= new ChatClient(loginID, host, port, this);
       
       
     } 
     catch(IOException exception) 
     {
-      System.out.println("Error: Can't setup connection!"
-                + " Terminating client.");
+      System.out.println("Error: Can't setup connection! Terminating client.");
       System.exit(1);
     }
     
@@ -128,7 +129,7 @@ public class ClientConsole implements ChatIF
     {
       host = "localhost";
     }
-    ClientConsole chat= new ClientConsole(host, DEFAULT_PORT);
+    ClientConsole chat = new ClientConsole(loginID, host, DEFAULT_PORT);
     chat.accept();  //Wait for console data
   }
 }

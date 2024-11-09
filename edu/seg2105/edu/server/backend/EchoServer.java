@@ -4,6 +4,8 @@ package edu.seg2105.edu.server.backend;
 // license found at www.lloseng.com 
 
 
+import java.io.IOException;
+
 import ocsf.server.*;
 
 /**
@@ -34,6 +36,7 @@ public class EchoServer extends AbstractServer
   public EchoServer(int port) 
   {
     super(port);
+    serverStarted();
   }
 
   
@@ -44,12 +47,55 @@ public class EchoServer extends AbstractServer
    *
    * @param msg The message received from the client.
    * @param client The connection from which the message originated.
+ * @throws IOException 
    */
-  public void handleMessageFromClient
-    (Object msg, ConnectionToClient client)
+  public void handleMessageFromClient(Object msg, ConnectionToClient client)
   {
-    System.out.println("Message received: " + msg + " from " + client);
-    this.sendToAllClients(msg);
+    String message = msg.toString();
+    
+    if (client.getInfo("loginID") == null) {
+      
+      if (message.startsWith("#login ")) {
+        String loginID = message.substring(7).trim(); 
+        
+        if (!loginID.isEmpty()) {
+          client.setInfo("loginID", loginID); 
+          System.out.println("Client logged in with ID: " + loginID);
+          try {
+			client.sendToClient("Login successful. Welcome " + loginID + "!");
+		} catch (IOException e) {
+		}
+        } else {
+          try {
+			client.sendToClient("ERROR: Login ID cannot be empty.");
+		} catch (IOException e) {
+	
+		}
+          try {
+            client.close();
+          } catch (IOException e) {
+            System.out.println("Error closing client connection: " + e.getMessage());
+          }
+        }
+      } else {
+   
+        try {
+			client.sendToClient("ERROR: You must log in first with #login <loginID>");
+		} catch (IOException e) {
+
+		}
+        try {
+          client.close();
+        } catch (IOException e) {
+          System.out.println("Error closing client connection: " + e.getMessage());
+        }
+      }
+    } else {
+      // Prefix messages from logged-in clients with their login ID
+      String loginID = (String) client.getInfo("loginID");
+      System.out.println("Message received from " + loginID + ": " + message);
+      this.sendToAllClients(loginID + ": " + message);
+    }
   }
     
   /**
